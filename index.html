@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag and Drop Editor</title>
+    <style>
+        * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.left-panel {
+    width: 30%;
+    background-color: #f0f0f0;
+    padding: 20px;
+    border-right: 1px solid #ccc;
+    overflow-y: auto;
+}
+
+.right-panel {
+    width: 70%;
+    padding: 20px;
+    position: relative;
+    min-height: 100vh;
+}
+
+.form-design-section,
+.preference-fields-section {
+    margin-bottom: 30px;
+}
+
+h3 {
+    margin-bottom: 15px;
+}
+
+h4 {
+    margin: 15px 0 10px;
+}
+
+.design-item {
+    margin-bottom: 15px;
+}
+
+.design-item label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.color-picker {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.color-box {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #ccc;
+}
+
+input[type="text"],
+select {
+    width: 100%;
+    padding: 5px;
+    margin-top: 5px;
+}
+
+.draggable {
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+    cursor: move;
+}
+
+.draggable:hover {
+    background-color: #e0e0e0;
+}
+
+.canvas-element {
+    position: absolute;
+    background-color: white;
+    padding: 10px;
+    border: 1px solid #ccc;
+    cursor: move;
+    min-width: 100px;
+}
+
+.canvas-image {
+    max-width: 200px;
+    position: absolute;
+    cursor: move;
+}
+
+.canvas-input-container {
+    position: absolute;
+    display: flex;
+    gap: 10px;
+    background-color: white;
+    padding: 10px;
+    border: 1px solid #ccc;
+    cursor: move;
+}
+
+.canvas-input {
+    padding: 5px;
+    border: 1px solid #ccc;
+}
+
+.save-btn {
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.save-btn:hover {
+    background-color: #45a049;
+}
+
+.heading-text {
+    font-size: 24px;
+    margin: 0;
+}
+
+.description-text {
+    font-size: 16px;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.switch-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 250px;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #2196F3;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+} 
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <!-- Form Design Section -->
+            <div class="form-design-section">
+                <h3>Form Design</h3>
+                
+                <div class="design-item">
+                    <label>Background Color:</label>
+                    <div class="color-picker">
+                        <div id="bgColorBox" class="color-box"></div>
+                        <input type="color" id="bgColorPicker" value="#ffffff">
+                    </div>
+                </div>
+
+                <div class="design-item">
+                    <label>Logo Image:</label>
+                    <input type="file" id="logoUpload" accept="image/*">
+                </div>
+
+                <div class="design-item draggable" draggable="true" data-type="heading">
+                    <label>Heading:</label>
+                    <input type="text" id="headingText" placeholder="Enter heading">
+                </div>
+
+                <div class="design-item">
+                    <label>Heading Font Color:</label>
+                    <div class="color-picker">
+                        <div id="headingColorBox" class="color-box"></div>
+                        <input type="color" id="headingColorPicker" value="#000000">
+                    </div>
+                </div>
+
+                <div class="design-item">
+                    <label>Select Font:</label>
+                    <select id="fontSelector">
+                        <option value="Arial">Arial</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                        <option value="Helvetica">Helvetica</option>
+                        <option value="Verdana">Verdana</option>
+                    </select>
+                </div>
+
+                <div class="design-item draggable" draggable="true" data-type="description">
+                    <label>Description:</label>
+                    <input type="text" id="descriptionText" placeholder="Enter description">
+                </div>
+            </div>
+
+            <!-- Preference Fields Section -->
+            <div class="preference-fields-section">
+                <h3>Preference Fields</h3>
+                
+                <h4>Communication Channel</h4>
+                <div class="draggable" draggable="true" data-type="email">Email</div>
+                <div class="draggable" draggable="true" data-type="sms">SMS</div>
+                <div class="draggable" draggable="true" data-type="push">Push Notifications</div>
+
+                <h4>Preferences</h4>
+                <div class="draggable" draggable="true" data-type="offers">Festival Offers</div>
+                <div class="draggable" draggable="true" data-type="cards">Credit Cards</div>
+            </div>
+        </div>
+
+        <!-- Right Panel (Canvas) -->
+        <div class="right-panel" id="canvas">
+            <!-- Dropped elements will appear here -->
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    const canvas = document.getElementById('canvas');
+    const bgColorPicker = document.getElementById('bgColorPicker');
+    const headingColorPicker = document.getElementById('headingColorPicker');
+    const fontSelector = document.getElementById('fontSelector');
+    const logoUpload = document.getElementById('logoUpload');
+
+    // Background color handling
+    bgColorPicker.addEventListener('input', function(e) {
+        canvas.style.backgroundColor = e.target.value;
+        document.getElementById('bgColorBox').style.backgroundColor = e.target.value;
+    });
+
+    // Heading color handling
+    headingColorPicker.addEventListener('input', function(e) {
+        document.getElementById('headingColorBox').style.backgroundColor = e.target.value;
+        // Update all heading elements' color
+        document.querySelectorAll('.canvas-heading').forEach(heading => {
+            heading.style.color = e.target.value;
+        });
+    });
+
+    // Font selection handling
+    fontSelector.addEventListener('change', function(e) {
+        document.querySelectorAll('.canvas-heading, .canvas-description').forEach(element => {
+            element.style.fontFamily = e.target.value;
+        });
+    });
+
+    // Logo upload handling
+    logoUpload.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.className = 'canvas-image';
+                img.style.left = '50px';
+                img.style.top = '50px';
+                makeElementDraggable(img);
+                canvas.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Drag and Drop functionality
+    let draggedElement = null;
+
+    document.querySelectorAll('.draggable').forEach(element => {
+        element.addEventListener('dragstart', function(e) {
+            draggedElement = e.target;
+        });
+    });
+
+    canvas.addEventListener('dragover', function(e) {
+        e.preventDefault();
+    });
+
+    canvas.addEventListener('drop', function(e) {
+        e.preventDefault();
+        if (draggedElement) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const newElement = document.createElement('div');
+            newElement.style.left = x + 'px';
+            newElement.style.top = y + 'px';
+
+            switch(draggedElement.dataset.type) {
+                case 'heading':
+                    // Create container for input and button
+                    newElement.className = 'canvas-input-container';
+                    
+                    // Create input element
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'canvas-input';
+                    input.placeholder = 'Enter your heading';
+                    
+                    // Create save button
+                    const saveBtn = document.createElement('button');
+                    saveBtn.textContent = 'Save';
+                    saveBtn.className = 'save-btn';
+                    
+                    // Prevent drag when interacting with input
+                    input.addEventListener('mousedown', function(e) {
+                        e.stopPropagation();
+                    });
+
+                    // Add save functionality
+                    saveBtn.addEventListener('click', () => saveElement(input, 'h2', 'heading-text'));
+                    input.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            saveElement(input, 'h2', 'heading-text');
+                        }
+                    });
+
+                    newElement.appendChild(input);
+                    newElement.appendChild(saveBtn);
+
+                    // Focus the input after dropping
+                    setTimeout(() => {
+                        input.focus();
+                    }, 0);
+                    break;
+
+                case 'description':
+                    // Create container for input and button
+                    newElement.className = 'canvas-input-container';
+                    
+                    // Create input element
+                    const descInput = document.createElement('input');
+                    descInput.type = 'text';
+                    descInput.className = 'canvas-input';
+                    descInput.placeholder = 'Enter your description';
+                    
+                    // Create save button
+                    const descSaveBtn = document.createElement('button');
+                    descSaveBtn.textContent = 'Save';
+                    descSaveBtn.className = 'save-btn';
+                    
+                    // Prevent drag when interacting with input
+                    descInput.addEventListener('mousedown', function(e) {
+                        e.stopPropagation();
+                    });
+
+                    // Add save functionality
+                    descSaveBtn.addEventListener('click', () => saveElement(descInput, 'p', 'description-text'));
+                    descInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            saveElement(descInput, 'p', 'description-text');
+                        }
+                    });
+
+                    newElement.appendChild(descInput);
+                    newElement.appendChild(descSaveBtn);
+
+                    // Focus the input after dropping
+                    setTimeout(() => {
+                        descInput.focus();
+                    }, 0);
+                    break;
+
+                case 'email':
+                case 'sms':
+                case 'push':
+                case 'offers':
+                case 'cards':
+                    newElement.className = 'canvas-element switch-container';
+                    
+                    // Create text element
+                    const textSpan = document.createElement('span');
+                    textSpan.textContent = draggedElement.textContent;
+                    
+                    // Create toggle switch
+                    const switchLabel = document.createElement('label');
+                    switchLabel.className = 'switch';
+                    
+                    const toggleInput = document.createElement('input');
+                    toggleInput.type = 'checkbox';
+                    
+                    // Prevent drag when interacting with toggle
+                    toggleInput.addEventListener('mousedown', function(e) {
+                        e.stopPropagation();
+                    });
+                    
+                    const sliderSpan = document.createElement('span');
+                    sliderSpan.className = 'slider';
+                    
+                    // Assemble the toggle switch
+                    switchLabel.appendChild(toggleInput);
+                    switchLabel.appendChild(sliderSpan);
+                    
+                    // Add elements to container
+                    newElement.appendChild(textSpan);
+                    newElement.appendChild(switchLabel);
+                    break;
+
+                default:
+                    newElement.className = 'canvas-element';
+                    newElement.textContent = draggedElement.textContent;
+            }
+
+            makeElementDraggable(newElement);
+            canvas.appendChild(newElement);
+        }
+    });
+
+    // Helper function to save elements
+    function saveElement(input, elementType, className) {
+        const text = input.value.trim();
+        if (text) {
+            const element = document.createElement(elementType);
+            element.className = `canvas-element ${className}`;
+            element.textContent = text;
+            
+            const container = input.parentElement;
+            element.style.left = container.style.left;
+            element.style.top = container.style.top;
+            element.style.position = 'absolute';
+            
+            if (className === 'heading-text') {
+                element.style.color = headingColorPicker.value;
+            }
+            element.style.fontFamily = fontSelector.value;
+            
+            makeElementDraggable(element);
+            canvas.appendChild(element);
+            container.remove();
+        }
+    }
+
+    function makeElementDraggable(element) {
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        element.onmousedown = dragMouseDown;
+
+        function dragMouseDown(e) {
+            e.preventDefault();
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = closeDragElement;
+            document.onmousemove = elementDrag;
+        }
+
+        function elementDrag(e) {
+            e.preventDefault();
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            element.style.top = (element.offsetTop - pos2) + "px";
+            element.style.left = (element.offsetLeft - pos1) + "px";
+        }
+
+        function closeDragElement() {
+            document.onmouseup = null;
+            document.onmousemove = null;
+        }
+    }
+}); 
+    </script>
+</body>
+</html> 
